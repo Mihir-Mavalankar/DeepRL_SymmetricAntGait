@@ -93,6 +93,7 @@ class Model(object):
         # UPDATE THE PARAMETERS USING LOSS
         # 1. Get the model parameters
         params = tf.trainable_variables('ppo2_model')
+        
         # 2. Build our trainer
         if comm is not None and comm.Get_size() > 1:
             self.trainer = MpiAdamOptimizer(comm, learning_rate=LR, mpi_rank_weight=mpi_rank_weight, epsilon=1e-5)
@@ -156,4 +157,3 @@ class Model(object):
             self.stats_list + [self._train_op],
             td_map
         )[:-1]
-

@@ -4,6 +4,8 @@ import multiprocessing
 import os.path as osp
 import gym
 from collections import defaultdict
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 import tensorflow as tf
 import numpy as np
 
@@ -217,7 +219,19 @@ def main(args):
 
     if args.save_path is not None and rank == 0:
         save_path = osp.expanduser(args.save_path)
-        model.save(save_path)
+        model.save(save_path)  #save model
+        init = tf.global_variables_initializer()
+        param_list = []
+        with tf.Session() as sess:
+            sess.run(init)
+            layers = sess.run(model.var)
+            i=0
+            for l in layers:
+                if('pi' in model.var[i].name):
+                    param_list.append(l)
+                i+=1
+
+        np.save(save_path+'_weights', np.asarray(param_list)) #save weights as numpy array
 
     if args.play:
         logger.log("Running trained model")
@@ -225,6 +239,17 @@ def main(args):
 
         state = model.initial_state if hasattr(model, 'initial_state') else None
         dones = np.zeros((1,))
+        print('----------------------------------------')
+
+
+        param_list = np.load(str(extra_args['load_path'])+'_weights.npy',allow_pickle=True)
+        for p in param_list:
+            print(p.shape)
+
+        print('----------------------------------------')
+        print(model.train_model.policy)
+
+
 
         episode_rew = 0
         while True:
@@ -247,4 +272,5 @@ def main(args):
     return model
 
 if __name__ == '__main__':
+
     main(sys.argv)
