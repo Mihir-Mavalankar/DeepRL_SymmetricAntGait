@@ -1,7 +1,7 @@
 import numpy as np
 import tensorflow as tf
 from baselines.a2c import utils
-from baselines.a2c.utils import conv, fc, conv_to_fc, batch_to_seq, seq_to_batch
+from baselines.a2c.utils import conv, fc,fc_wshare, conv_to_fc, batch_to_seq, seq_to_batch
 from baselines.common.mpi_running_mean_std import RunningMeanStd
 
 mapping = {}
@@ -72,7 +72,7 @@ def build_impala_cnn(unscaled_images, depths=[16,32,32], **conv_kwargs):
 
 
 @register("mlp")
-def mlp(num_layers=2, num_hidden=64, activation=tf.tanh, layer_norm=False):
+def mlp(num_layers=2, num_hidden=64, activation=tf.nn.relu, layer_norm=False):
     """
     Stack of fully-connected layers to be used in a policy / q-function approximator
 
@@ -83,7 +83,7 @@ def mlp(num_layers=2, num_hidden=64, activation=tf.tanh, layer_norm=False):
 
     num_hidden: int                 size of fully-connected layers (default: 64)
 
-    activation:                     activation function (default: tf.tanh)
+    activation:                     activation function (default: tf.tanh) - changed to relu now
 
     Returns:
     -------
@@ -93,7 +93,31 @@ def mlp(num_layers=2, num_hidden=64, activation=tf.tanh, layer_norm=False):
     def network_fn(X):
         h = tf.layers.flatten(X)
         for i in range(num_layers):
-            h = fc(h, 'mlp_fc{}'.format(i), nh=num_hidden, init_scale=np.sqrt(2))
+            if(i==0 and num_hidden==64):
+                h = fc(h, 'mlp_fc{}'.format(i), nh=num_hidden*2, init_scale=np.sqrt(2))   #Make the first hidden layer 128
+            else:
+                h = fc(h, 'mlp_fc{}'.format(i), nh=num_hidden, init_scale=np.sqrt(2))
+            if layer_norm:
+                h = tf.contrib.layers.layer_norm(h, center=True, scale=True)
+            h = activation(h)
+
+        return h
+
+    return network_fn
+
+
+@register("mlp_ws")
+def mlp_ws(num_layers=2, num_hidden=64, activation=tf.nn.relu, layer_norm=False):
+    """
+    Changed mlp, weight sharing 
+    """
+    def network_fn(X):
+        h = tf.layers.flatten(X)
+        for i in range(num_layers):
+            if(i==0 and num_hidden==64):
+                h = fc_wshare(h, 'mlp_fc{}'.format(i), nh=num_hidden*2, init_scale=np.sqrt(2))   #Make the first hidden layer 128
+            else:
+                h = fc_wshare(h, 'mlp_fc{}'.format(i), nh=num_hidden, init_scale=np.sqrt(2))
             if layer_norm:
                 h = tf.contrib.layers.layer_norm(h, center=True, scale=True)
             h = activation(h)

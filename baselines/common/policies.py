@@ -60,7 +60,7 @@ class PolicyWithValue(object):
             self.q = fc(vf_latent, 'q', env.action_space.n)
             self.vf = self.q
         else:
-            self.vf = fc(vf_latent, 'vf', 1)
+            self.vf = fc(vf_latent, 'vf', 1)   #This is the head of the value network for PPO 
             self.vf = self.vf[:,0]
 
     def _evaluate(self, variables, observation, **extra_feed):
@@ -121,7 +121,7 @@ class PolicyWithValue(object):
 def build_policy(env, policy_network, value_network=None,  normalize_observations=False, estimate_q=False, **policy_kwargs):
     if isinstance(policy_network, str):
         network_type = policy_network
-        policy_network = get_network_builder(network_type)(**policy_kwargs)
+        policy_network = get_network_builder(network_type)(**policy_kwargs) #This returns a function that builds a neural network, not the network itself
 
     def policy_fn(nbatch=None, nsteps=None, sess=None, observ_placeholder=None):
         ob_space = env.observation_space
@@ -139,7 +139,7 @@ def build_policy(env, policy_network, value_network=None,  normalize_observation
         encoded_x = encode_observation(ob_space, encoded_x)
 
         with tf.variable_scope('pi', reuse=tf.AUTO_REUSE):
-            policy_latent = policy_network(encoded_x)
+            policy_latent = policy_network(encoded_x)  #policy_latent is a tensor from the network built using the function
             if isinstance(policy_latent, tuple):
                 policy_latent, recurrent_tensors = policy_latent
 
@@ -151,7 +151,7 @@ def build_policy(env, policy_network, value_network=None,  normalize_observation
                     extra_tensors.update(recurrent_tensors)
 
 
-        _v_net = value_network
+        _v_net = value_network  #_v_net will be None if nothing is passed in ppo2.py for value_network parameter
 
         if _v_net is None or _v_net == 'shared':
             vf_latent = policy_latent
@@ -183,4 +183,3 @@ def _normalize_clip_observation(x, clip_range=[-5.0, 5.0]):
     rms = RunningMeanStd(shape=x.shape[1:])
     norm_x = tf.clip_by_value((x - rms.mean) / rms.std, min(clip_range), max(clip_range))
     return norm_x, rms
-

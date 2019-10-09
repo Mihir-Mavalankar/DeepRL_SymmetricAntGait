@@ -15,6 +15,7 @@ from baselines.common.cmd_util import common_arg_parser, parse_unknown_args, mak
 from baselines.common.tf_util import get_session
 from baselines import logger
 from importlib import import_module
+from baselines import analyze_weights
 
 try:
     from mpi4py import MPI
@@ -220,6 +221,7 @@ def main(args):
     if args.save_path is not None and rank == 0:
         save_path = osp.expanduser(args.save_path)
         model.save(save_path)  #save model
+        #Now saving weights in seperate file
         init = tf.global_variables_initializer()
         param_list = []
         with tf.Session() as sess:
@@ -239,17 +241,13 @@ def main(args):
 
         state = model.initial_state if hasattr(model, 'initial_state') else None
         dones = np.zeros((1,))
+
         print('----------------------------------------')
-
-
+        for v in model.var:
+            print(v)
         param_list = np.load(str(extra_args['load_path'])+'_weights.npy',allow_pickle=True)
-        for p in param_list:
-            print(p.shape)
-
+        analyze_weights.weight_diff(param_list)
         print('----------------------------------------')
-        print(model.train_model.policy)
-
-
 
         episode_rew = 0
         while True:
@@ -266,6 +264,8 @@ def main(args):
                 print('episode_rew={}'.format(episode_rew))
                 episode_rew = 0
                 obs = env.reset()
+
+
 
     env.close()
 
