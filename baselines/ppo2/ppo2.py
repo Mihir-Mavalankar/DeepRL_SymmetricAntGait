@@ -20,7 +20,7 @@ def constfn(val):
 
 def learn(*, network, env, total_timesteps, eval_env = None, seed=None, nsteps=2048, ent_coef=0.0, lr=3e-4,
             vf_coef=0.5,  max_grad_norm=0.5, gamma=0.99, lam=0.95,
-            log_interval=20, nminibatches=4, noptepochs=4, cliprange=0.2, #changes log_interval  from 10 to 20
+            log_interval=20, nminibatches=4, noptepochs=4, cliprange=0.2, #changed log_interval  from 10 to 20
             save_interval=0, load_path=None, model_fn=None, update_fn=None, init_fn=None, mpi_rank_weight=1, comm=None, **network_kwargs):
     '''
     Learn policy using PPO algorithm (https://arxiv.org/abs/1707.06347)
@@ -88,7 +88,7 @@ def learn(*, network, env, total_timesteps, eval_env = None, seed=None, nsteps=2
     policy = build_policy(env, network, **network_kwargs)
 
     # Get the nb of env
-    nenvs = env.num_envs
+    nenvs = env.num_envs    #Default value is 1
 
     # Get state_space and action_space
     ob_space = env.observation_space

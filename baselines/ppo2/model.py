@@ -75,7 +75,7 @@ class Model(object):
         vf_loss = .5 * tf.reduce_mean(tf.maximum(vf_losses1, vf_losses2))
 
         # Calculate ratio (pi current policy / pi old policy)
-        ratio = tf.exp(OLDNEGLOGPAC - neglogpac)
+        ratio = tf.exp(OLDNEGLOGPAC - neglogpac)   #This is exp^(-log(old_poilicy)-(-log(new_policy)))
 
         # Defining Loss = - J is equivalent to max J
         pg_losses = -ADV * ratio
@@ -93,7 +93,7 @@ class Model(object):
         # UPDATE THE PARAMETERS USING LOSS
         # 1. Get the model parameters
         params = tf.trainable_variables('ppo2_model')
-        
+
         # 2. Build our trainer
         if comm is not None and comm.Get_size() > 1:
             self.trainer = MpiAdamOptimizer(comm, learning_rate=LR, mpi_rank_weight=mpi_rank_weight, epsilon=1e-5)

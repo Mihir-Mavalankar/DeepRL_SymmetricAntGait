@@ -46,7 +46,9 @@ class PolicyWithValue(object):
         # Based on the action space, will select what probability distribution type
         self.pdtype = make_pdtype(env.action_space)
 
-        self.pd, self.pi = self.pdtype.pdfromlatent(latent, init_scale=0.01)
+        #This is where the last fc layer is added
+        #pdfromlatent_wshare is only defined for DiagGaussianPdType
+        self.pd, self.pi = self.pdtype.pdfromlatent_wshare(latent, init_scale=0.01)
 
         # Take an action
         self.action = self.pd.sample()
@@ -60,7 +62,7 @@ class PolicyWithValue(object):
             self.q = fc(vf_latent, 'q', env.action_space.n)
             self.vf = self.q
         else:
-            self.vf = fc(vf_latent, 'vf', 1)   #This is the head of the value network for PPO 
+            self.vf = fc(vf_latent, 'vf', 1)   #This is the head of the value network for PPO
             self.vf = self.vf[:,0]
 
     def _evaluate(self, variables, observation, **extra_feed):

@@ -1,7 +1,7 @@
 import tensorflow as tf
 import numpy as np
 import baselines.common.tf_util as U
-from baselines.a2c.utils import fc
+from baselines.a2c.utils import fc, fc_wshare
 from tensorflow.python.ops import math_ops
 
 class Pd(object):
@@ -104,6 +104,14 @@ class DiagGaussianPdType(PdType):
         logstd = tf.get_variable(name='pi/logstd', shape=[1, self.size], initializer=tf.zeros_initializer())
         pdparam = tf.concat([mean, mean * 0.0 + logstd], axis=1)
         return self.pdfromflat(pdparam), mean
+
+    #New function for weight sharing in last policy net layer#
+    def pdfromlatent_wshare(self, latent_vector, init_scale=1.0, init_bias=0.0):
+        mean = _matching_fc_wshare(latent_vector, 'pi', self.size, init_scale=init_scale, init_bias=init_bias)
+        logstd = tf.get_variable(name='pi/logstd', shape=[1, self.size], initializer=tf.zeros_initializer())
+        pdparam = tf.concat([mean, mean * 0.0 + logstd], axis=1)
+        return self.pdfromflat(pdparam), mean
+    ##########################################################
 
     def param_shape(self):
         return [2*self.size]
@@ -353,3 +361,11 @@ def _matching_fc(tensor, name, size, init_scale, init_bias):
         return tensor
     else:
         return fc(tensor, name, size, init_scale=init_scale, init_bias=init_bias)
+
+#New function added here######################
+def _matching_fc_wshare(tensor, name, size, init_scale, init_bias):
+    if tensor.shape[-1] == size:
+        return tensor
+    else:
+        return fc_wshare(tensor, name, size, init_scale=init_scale, init_bias=init_bias)
+##############################################
