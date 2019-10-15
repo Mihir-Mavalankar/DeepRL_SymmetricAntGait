@@ -27,10 +27,10 @@ try:
 except ImportError:
     pybullet_envs = None
 
-try:
-    import roboschool
-except ImportError:
-    roboschool = None
+# try:
+#     import roboschool
+# except ImportError:
+#     roboschool = None
 
 _game_envs = defaultdict(set)
 for env in gym.envs.registry.all():
@@ -76,6 +76,7 @@ def train(args, extra_args):
 
     print('Training {} on {}:{} with arguments \n{}'.format(args.alg, env_type, env_id, alg_kwargs))
 
+    print(env)
     model = learn(
         env=env,
         seed=seed,
@@ -250,6 +251,7 @@ def main(args):
         print('----------------------------------------')
 
         episode_rew = 0
+
         while True:
             if state is not None:
                 actions, _, state, _ = model.step(obs,S=state, M=dones)
