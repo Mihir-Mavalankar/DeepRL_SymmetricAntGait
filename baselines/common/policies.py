@@ -15,7 +15,7 @@ class PolicyWithValue(object):
     Encapsulates fields and methods for RL policy and value function estimation with shared parameters
     """
 
-    def __init__(self, env, observations, latent, estimate_q=False, vf_latent=None, sess=None, **tensors):
+    def __init__(self, env, observations, latent, estimate_q=False,network_type='mlp', vf_latent=None, sess=None, **tensors):
         """
         Parameters:
         ----------
@@ -48,7 +48,13 @@ class PolicyWithValue(object):
 
         #This is where the last fc layer is added
         #pdfromlatent_wshare is only defined for DiagGaussianPdType
-        self.pd, self.pi = self.pdtype.pdfromlatent_wshare(latent, init_scale=0.01)
+        print("Policy Network: "+str(network_type))
+        if(network_type == "mlp_sym_ws"):
+            self.pd, self.pi = self.pdtype.pdfromlatent_sym_wshare(latent, init_scale=0.01)
+        elif(network_type == "mlp_sym"):
+            self.pd, self.pi = self.pdtype.pdfromlatent_sym(latent, init_scale=0.01)
+        else:
+            self.pd, self.pi = self.pdtype.pdfromlatent(latent, init_scale=0.01)
 
         # Take an action
         self.action = self.pd.sample()
@@ -121,9 +127,11 @@ class PolicyWithValue(object):
         tf_util.load_state(load_path, sess=self.sess)
 
 def build_policy(env, policy_network, value_network=None,  normalize_observations=False, estimate_q=False, **policy_kwargs):
+
     if isinstance(policy_network, str):
         network_type = policy_network
         policy_network = get_network_builder(network_type)(**policy_kwargs) #This returns a function that builds a neural network, not the network itself
+
 
     def policy_fn(nbatch=None, nsteps=None, sess=None, observ_placeholder=None):
         ob_space = env.observation_space
@@ -174,6 +182,7 @@ def build_policy(env, policy_network, value_network=None,  normalize_observation
             vf_latent=vf_latent,
             sess=sess,
             estimate_q=estimate_q,
+            network_type=network_type,
             **extra_tensors
         )
         return policy

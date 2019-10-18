@@ -85,7 +85,7 @@ def fc_wshare(x, scope, nh, *, init_scale=1.0, init_bias=0.0):
 #     #This is now [asym_vals, j_fl,j_bl, l_contant,r_contact,rev_j_br, rev_j_fr, rev_asym_vals]
 
 #Ant -> foot_list = ['front_left_foot', 'front_right_foot', 'left_back_foot', 'right_back_foot']
-def quad_mirror_layer(x, scope, nh, *, init_scale=1.0, init_bias=0.0):
+def quad_mirror_layer(x, scope, nh=0, *, init_scale=1.0, init_bias=0.0):
     with tf.variable_scope(scope):   #Note this layer has no trainnable parameters
         nin = x.get_shape()[1].value
 
@@ -103,6 +103,19 @@ def quad_mirror_layer(x, scope, nh, *, init_scale=1.0, init_bias=0.0):
         return tf.concat([more, j1, j3, f1,f3,          #First half of mirrored input
                     f4,f2,tf.reverse(j4,[1]),tf.reverse(j2,[1]),tf.reverse(more,[1])],1)        #Second half of mirrored input
 
+#Action space for Ant is 8 dim
+#Convert from [LF,LB,rev(RB),rev(RF)] -> [LF,RF,LB,RB]
+#We are doing this the opposite way as this layer will be between the final action layer and the rest of the network
+def quad_mirror_action_layer(x, scope, nh=0, *, init_scale=1.0, init_bias=0.0):
+    with tf.variable_scope(scope):   #Note this layer has no trainnable parameters
+        nin = x.get_shape()[1].value
+
+        lf = tf.slice(x,[0,0],[1,2])
+        lb = tf.slice(x,[0,2],[1,2])
+        rev_rb = tf.slice(x,[0,4],[1,2])
+        rev_rf = tf.slice(x,[0,6],[1,2])
+
+        return tf.concat([lf,tf.reverse(rev_rf,[1]),lb,tf.reverse(rev_rb,[1])],1)
 
 ###################################################
 

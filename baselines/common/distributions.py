@@ -1,7 +1,7 @@
 import tensorflow as tf
 import numpy as np
 import baselines.common.tf_util as U
-from baselines.a2c.utils import fc, fc_wshare
+from baselines.a2c.utils import fc, fc_wshare, quad_mirror_action_layer
 from tensorflow.python.ops import math_ops
 
 class Pd(object):
@@ -105,9 +105,19 @@ class DiagGaussianPdType(PdType):
         pdparam = tf.concat([mean, mean * 0.0 + logstd], axis=1)
         return self.pdfromflat(pdparam), mean
 
-    #New function for weight sharing in last policy net layer#
-    def pdfromlatent_wshare(self, latent_vector, init_scale=1.0, init_bias=0.0):
+    #New function for symmetric input output in last policy net layer#
+    def pdfromlatent_sym(self, latent_vector, init_scale=1.0, init_bias=0.0):
+        mean = _matching_fc(latent_vector, 'pi', self.size, init_scale=init_scale, init_bias=init_bias)
+        mean = quad_mirror_action_layer(mean,'action_mirror')
+        logstd = tf.get_variable(name='pi/logstd', shape=[1, self.size], initializer=tf.zeros_initializer())
+        pdparam = tf.concat([mean, mean * 0.0 + logstd], axis=1)
+        return self.pdfromflat(pdparam), mean
+    ##########################################################
+
+    #New function for symmetric input output and weight sharing in last policy net layer#
+    def pdfromlatent_sym_wshare(self, latent_vector, init_scale=1.0, init_bias=0.0):
         mean = _matching_fc_wshare(latent_vector, 'pi', self.size, init_scale=init_scale, init_bias=init_bias)
+        mean = quad_mirror_action_layer(mean,'action_mirror')
         logstd = tf.get_variable(name='pi/logstd', shape=[1, self.size], initializer=tf.zeros_initializer())
         pdparam = tf.concat([mean, mean * 0.0 + logstd], axis=1)
         return self.pdfromflat(pdparam), mean
