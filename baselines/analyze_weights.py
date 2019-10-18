@@ -24,4 +24,4 @@ def weight_diff(param_list):
             diff = np.sum(diff, axis = 0).reshape(1,diff.shape[1])
 
         #Save this to a text file
-        print(p.shape,diff.shape)
+        #print(p.shape,diff.shape)

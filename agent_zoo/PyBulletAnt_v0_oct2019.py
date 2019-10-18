@@ -2,7 +2,7 @@ import os.path, gym
 import numpy as np
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 import tensorflow as tf
-import roboschool
+#import roboschool
 import pybullet
 import pybullet_envs
 import time

@@ -62,6 +62,7 @@ def fc(x, scope, nh, *, init_scale=1.0, init_bias=0.0):
         b = tf.get_variable("b", [nh], initializer=tf.constant_initializer(init_bias))
         return tf.matmul(x, w)+b
 
+#New functions added###############################
 #New fully connected layer with weigth sharing#####
 def fc_wshare(x, scope, nh, *, init_scale=1.0, init_bias=0.0):
     with tf.variable_scope(scope):
@@ -69,12 +70,40 @@ def fc_wshare(x, scope, nh, *, init_scale=1.0, init_bias=0.0):
         w = tf.get_variable("w", [nin, int(nh/2)], initializer=ortho_init(init_scale))
         b = tf.get_variable("b", [nh], initializer=tf.constant_initializer(init_bias))
 
-        # print(w)
-        # print(w.shape)
         w_prime = tf.concat([w,tf.reverse(w,[1])],1)
-        # print(w_prime)
-        # print(w_prime.shape)
+
         return tf.matmul(x, w_prime)+b
+
+#This is the normal state vector
+#np.clip( np.concatenate([more] + [j] + [self.feet_contact]), -5, +5)
+
+#This is what we want for symmetry, hence the mirror_layer
+#     #Symmetric/Mirrored state vector
+#     return np.clip( np.concatenate([more] + [j[:qtr_len]] + [j[(2*qtr_len):(3*qtr_len)]] + [self.feet_contact[0:1]]+ [self.feet_contact[2:3]]
+#                         + [self.feet_contact[3:4]] + [self.feet_contact[1:2]] + [j[(3*qtr_len):]][::-1] + [j[qtr_len:(2*qtr_len)]][::-1] + [more][::-1] ), -5, +5)
+#
+#     #This is now [asym_vals, j_fl,j_bl, l_contant,r_contact,rev_j_br, rev_j_fr, rev_asym_vals]
+
+#Ant -> foot_list = ['front_left_foot', 'front_right_foot', 'left_back_foot', 'right_back_foot']
+def quad_mirror_layer(x, scope, nh, *, init_scale=1.0, init_bias=0.0):
+    with tf.variable_scope(scope):   #Note this layer has no trainnable parameters
+        nin = x.get_shape()[1].value
+
+        more = tf.slice(x,[0,0],[1,8])
+        j1 = tf.slice(x,[0,8],[1,4])    #lf
+        j2 = tf.slice(x,[0,12],[1,4])   #rf
+        j3 = tf.slice(x,[0,16],[1,4])   #lb
+        j4 = tf.slice(x,[0,20],[1,4])   #rb
+
+        f1 = tf.slice(x,[0,24],[1,1])
+        f2 = tf.slice(x,[0,25],[1,1])
+        f3 = tf.slice(x,[0,26],[1,1])
+        f4 = tf.slice(x,[0,27],[1,1])
+
+        return tf.concat([more, j1, j3, f1,f3,          #First half of mirrored input
+                    f4,f2,tf.reverse(j4,[1]),tf.reverse(j2,[1]),tf.reverse(more,[1])],1)        #Second half of mirrored input
+
+
 ###################################################
 
 def batch_to_seq(h, nbatch, nsteps, flat=False):

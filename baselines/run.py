@@ -22,15 +22,16 @@ try:
 except ImportError:
     MPI = None
 
+import pybullet
 try:
     import pybullet_envs
 except ImportError:
     pybullet_envs = None
 
-# try:
-#     import roboschool
-# except ImportError:
-#     roboschool = None
+try:
+    import roboschool
+except ImportError:
+    roboschool = None
 
 _game_envs = defaultdict(set)
 for env in gym.envs.registry.all():
@@ -76,7 +77,6 @@ def train(args, extra_args):
 
     print('Training {} on {}:{} with arguments \n{}'.format(args.alg, env_type, env_id, alg_kwargs))
 
-    print(env)
     model = learn(
         env=env,
         seed=seed,
@@ -238,6 +238,8 @@ def main(args):
 
     if args.play:
         logger.log("Running trained model")
+        pybullet.connect(pybullet.DIRECT)
+        env.render(mode="human")
         obs = env.reset()
 
         state = model.initial_state if hasattr(model, 'initial_state') else None
@@ -247,7 +249,7 @@ def main(args):
         for v in model.var:
             print(v)
         param_list = np.load(str(extra_args['load_path'])+'_weights.npy',allow_pickle=True)
-        analyze_weights.weight_diff(param_list)
+        #analyze_weights.weight_diff(param_list)
         print('----------------------------------------')
 
         episode_rew = 0
@@ -266,8 +268,6 @@ def main(args):
                 print('episode_rew={}'.format(episode_rew))
                 episode_rew = 0
                 obs = env.reset()
-
-
 
     env.close()
 
