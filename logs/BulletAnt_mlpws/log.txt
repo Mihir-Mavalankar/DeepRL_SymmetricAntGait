@@ -1,0 +1,16 @@
+Logging to ./logs/BulletAnt_mlpws/
+--------------------------------------
+| eplenmean               | 1e+03    |
+| eprewmean               | 422      |
+| fps                     | 363      |
+| loss/approxkl           | 0.00408  |
+| loss/clipfrac           | 0.0366   |
+| loss/policy_entropy     | 11.3     |
+| loss/policy_loss        | -0.00401 |
+| loss/value_loss         | 25.1     |
+| misc/explained_variance | -0.0854  |
+| misc/nupdates           | 1        |
+| misc/serial_timesteps   | 4.1e+03  |
+| misc/time_elapsed       | 11.3     |
+| misc/total_timesteps    | 4.1e+03  |
+--------------------------------------

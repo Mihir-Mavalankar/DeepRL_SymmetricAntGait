@@ -11,10 +11,10 @@ algo=ppo2
 
 #PyBullet######################
 #Model without symmetric weights
-# python -m baselines.run --alg=$algo --env=AntBulletEnv-v0 --num_timesteps=$num_tm  --nsteps=4096 --noptepochs=15 --save_path=./models_bullet/antbullet_$algo$num_tm --log_path=./logs/BulletAnt_mlp/
-# python -m baselines.run --alg=$algo --env=AntBulletEnv-v0 --num_timesteps=0 --load_path=./models_bullet/antbullet_mplws_$algo$num_tm --play
+#python -m baselines.run --alg=$algo --env=AntBulletEnv-v0 --num_timesteps=$num_tm  --nsteps=4096 --noptepochs=15 --save_path=./models_bullet/antbullet_$algo$num_tm --log_path=./logs/BulletAnt_mlp/
+python -m baselines.run --alg=$algo --env=AntBulletEnv-v0 --num_timesteps=0 --load_path=./models_bullet/antbullet_$algo$num_tm --play
 
 
 #Model with symmetric weights
-python -m baselines.run --alg=$algo --env=AntBulletEnv-v0 --num_timesteps=$num_tm  --nsteps=4096 --noptepochs=15 --network=mlp_ws --save_path=./models_bullet/antbullet_mplws_$algo$num_tm --log_path=./logs/BulletAnt_mlpws/
-python -m baselines.run --alg=$algo --env=AntBulletEnv-v0 --num_timesteps=0 --network=mlp_ws --load_path=./models_bullet/antbullet_mplws_$algo$num_tm --play
+#python -m baselines.run --alg=$algo --env=AntBulletEnv-v0 --num_timesteps=$num_tm  --nsteps=4096 --noptepochs=15 --network=mlp_ws --save_path=./models_bullet/antbullet_mplws_$algo$num_tm --log_path=./logs/BulletAnt_mlpws/
+#python -m baselines.run --alg=$algo --env=AntBulletEnv-v0 --num_timesteps=0 --network=mlp_ws --load_path=./models_bullet/antbullet_mplws_$algo$num_tm --play
