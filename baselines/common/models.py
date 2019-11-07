@@ -105,6 +105,32 @@ def mlp(num_layers=2, num_hidden=64, activation=tf.nn.relu, layer_norm=False):
 
     return network_fn
 
+
+#New network defined##################
+@register("mlp_sym_noact")
+def mlp_sym_noact(num_layers=3, num_hidden=64, activation=tf.nn.relu, layer_norm=False):
+    """
+    Changed mlp, symmetric input output only, no weight sharing
+    """
+    def network_fn(X):
+        h = tf.layers.flatten(X)
+        for i in range(num_layers):
+            if(i==0):
+                h = quad_mirror_layer(h, 'mlp_fc{}'.format(i), nh=0, init_scale=1.0)  #Add mirror layer
+            elif(i==1 and num_hidden==64):
+                h = fc(h, 'mlp_fc{}'.format(i), nh=num_hidden*2, init_scale=np.sqrt(2))   #Make the first hidden layer 128
+            else:
+                h = fc(h, 'mlp_fc{}'.format(i), nh=num_hidden, init_scale=np.sqrt(2))
+            if layer_norm:
+                h = tf.contrib.layers.layer_norm(h, center=True, scale=True)
+            h = activation(h)
+
+        return h
+
+    return network_fn
+#######################################
+
+
 #New network defined##################
 @register("mlp_sym")
 def mlp_sym(num_layers=3, num_hidden=64, activation=tf.nn.relu, layer_norm=False):
