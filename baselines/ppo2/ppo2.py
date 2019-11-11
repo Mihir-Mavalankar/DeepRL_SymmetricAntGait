@@ -1,6 +1,7 @@
 import os
 import time
 import numpy as np
+import tensorflow as tf
 import os.path as osp
 from baselines import logger
 from collections import deque
@@ -12,6 +13,18 @@ except ImportError:
     MPI = None
 from baselines.ppo2.runner import Runner
 
+def save_weights(network,model,epoch):
+    param_list = []
+
+    x = model.var
+    for i in range(len(x)):
+        v= x[i].eval()
+        param_list.append(v)
+
+    if(network=="mlp"):
+        np.save('./Weights_Vanilla/Ant_ppo2_weights_'+str(epoch), np.asarray(param_list)) #save weights as numpy array
+    elif(network=="mlp_sym_noact"):
+        np.save('./Weights/Ant_ppo2_weights_'+str(epoch), np.asarray(param_list)) #save weights as numpy array
 
 def constfn(val):
     def f(_):
@@ -192,6 +205,7 @@ def learn(*, network, env, total_timesteps, eval_env = None, seed=None, nsteps=2
         if update % log_interval == 0 or update == 1:
             # Calculates if value function is a good predicator of the returns (ev > 1)
             # or if it's just worse than predicting nothing (ev =< 0)
+            #save_weights(network,model,update)
             ev = explained_variance(values, returns)
             logger.logkv("misc/serial_timesteps", update*nsteps)
             logger.logkv("misc/nupdates", update)

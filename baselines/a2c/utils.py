@@ -85,23 +85,30 @@ def fc_wshare(x, scope, nh, *, init_scale=1.0, init_bias=0.0):
 #     #This is now [asym_vals, j_fl,j_bl, l_contant,r_contact,rev_j_br, rev_j_fr, rev_asym_vals]
 
 #Ant -> foot_list = ['front_left_foot', 'front_right_foot', 'left_back_foot', 'right_back_foot']
-def quad_mirror_layer(x, scope, nh=0, *, init_scale=1.0, init_bias=0.0):
-    with tf.variable_scope(scope):   #Note this layer has no trainnable parameters
-        nin = x.get_shape()[1].value
+def quad_mirror_layer(x):
+    batch = x.get_shape()[0].value
+    nin = x.get_shape()[1].value
 
-        more = tf.slice(x,[0,0],[1,8])
-        j1 = tf.slice(x,[0,8],[1,4])    #lf
-        j2 = tf.slice(x,[0,12],[1,4])   #rf
-        j3 = tf.slice(x,[0,16],[1,4])   #lb
-        j4 = tf.slice(x,[0,20],[1,4])   #rb
+    more = tf.slice(x,[0,0],[batch,8])
 
-        f1 = tf.slice(x,[0,24],[1,1])
-        f2 = tf.slice(x,[0,25],[1,1])
-        f3 = tf.slice(x,[0,26],[1,1])
-        f4 = tf.slice(x,[0,27],[1,1])
+    j1 = tf.slice(x,[0,8],[batch,4])    #lf
+    j2 = tf.slice(x,[0,12],[batch,4])   #rf
+    j3 = tf.slice(x,[0,16],[batch,4])   #lb
+    j4 = tf.slice(x,[0,20],[batch,4])   #rb
 
-        return tf.concat([more, j1, j3, f1,f3,          #First half of mirrored input
-                    f4,f2,tf.reverse(j4,[1]),tf.reverse(j2,[1]),tf.reverse(more,[1])],1)        #Second half of mirrored input
+    f1 = tf.slice(x,[0,24],[batch,1])
+    f2 = tf.slice(x,[0,25],[batch,1])
+    f3 = tf.slice(x,[0,26],[batch,1])
+    f4 = tf.slice(x,[0,27],[batch,1])
+
+    temp = tf.concat([more, j1, j3, f1,f3,          #First half of mirrored input
+                f4,f2,tf.reverse(j4,[1]),tf.reverse(j2,[1]),tf.reverse(more,[1])],1)        #Second half of mirrored input
+
+    # with tf.Session() as sess:
+    #     print(temp.eval())
+    # #print(temp.eval())
+    # print(blah)
+    return temp
 
 #Action space for Ant is 8 dim
 #Convert from [LF,LB,rev(RB),rev(RF)] -> [LF,RF,LB,RB]

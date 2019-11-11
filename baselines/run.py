@@ -8,6 +8,8 @@ import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 import tensorflow as tf
 import numpy as np
+import pybullet_envs
+import time
 
 from baselines.common.vec_env import VecFrameStack, VecNormalize, VecEnv
 from baselines.common.vec_env.vec_video_recorder import VecVideoRecorder
@@ -256,6 +258,7 @@ def main(args):
         episode_rew = 0
 
         while True:
+            time.sleep(1. / 60.)
             if state is not None:
                 actions, _, state, _ = model.step(obs,S=state, M=dones)
             else:
@@ -263,7 +266,9 @@ def main(args):
 
             obs, rew, done, _ = env.step(actions)
             episode_rew += rew[0] if isinstance(env, VecEnv) else rew
-            env.render()
+            
+            env.envs[0].render("human")
+
             done = done.any() if isinstance(done, np.ndarray) else done
             if done:
                 print('episode_rew={}'.format(episode_rew))

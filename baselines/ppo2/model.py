@@ -11,6 +11,8 @@ try:
 except ImportError:
     MPI = None
 
+
+
 class Model(object):
     """
     We use this object to :
@@ -115,7 +117,6 @@ class Model(object):
         self._train_op = self.trainer.apply_gradients(grads_and_var)
         self.loss_names = ['policy_loss', 'value_loss', 'policy_entropy', 'approxkl', 'clipfrac']
         self.stats_list = [pg_loss, vf_loss, entropy, approxkl, clipfrac]
-
 
         self.train_model = train_model
         self.act_model = act_model
