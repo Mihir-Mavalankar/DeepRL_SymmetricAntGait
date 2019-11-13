@@ -13,18 +13,19 @@ except ImportError:
     MPI = None
 from baselines.ppo2.runner import Runner
 
-def save_weights(network,model,epoch):
-    param_list = []
-
-    x = model.var
-    for i in range(len(x)):
-        v= x[i].eval()
-        param_list.append(v)
-
-    if(network=="mlp"):
-        np.save('./Weights_Vanilla/Ant_ppo2_weights_'+str(epoch), np.asarray(param_list)) #save weights as numpy array
-    elif(network=="mlp_sym_noact"):
-        np.save('./Weights/Ant_ppo2_weights_'+str(epoch), np.asarray(param_list)) #save weights as numpy array
+#Use for analysis of weights after each batch
+# def save_weights(network,model,epoch):
+#     param_list = []
+#
+#     x = model.var
+#     for i in range(len(x)):
+#         v= x[i].eval()
+#         param_list.append(v)
+#
+#     if(network=="mlp"):
+#         np.save('./Weights_Vanilla/Ant_ppo2_weights_'+str(epoch), np.asarray(param_list)) #save weights as numpy array
+#     elif(network=="mlp_sym_noact"):
+#         np.save('./Weights/Ant_ppo2_weights_'+str(epoch), np.asarray(param_list)) #save weights as numpy array
 
 def constfn(val):
     def f(_):

@@ -1,6 +1,7 @@
 import sys
 import re
 import multiprocessing
+import datetime
 import os.path as osp
 import gym
 from collections import defaultdict
@@ -68,6 +69,7 @@ def train(args, extra_args):
     alg_kwargs.update(extra_args)
 
     env = build_env(args)
+    env.render(mode='human')  #Added this line here for making render window appear
     if args.save_video_interval != 0:
         env = VecVideoRecorder(env, osp.join(logger.get_dir(), "videos"), record_video_trigger=lambda x: x % args.save_video_interval == 0, video_length=args.save_video_length)
 
@@ -121,6 +123,7 @@ def build_env(args):
 
         if env_type == 'mujoco':
             env = VecNormalize(env, use_tf=True)
+
 
     return env
 
@@ -225,7 +228,7 @@ def main(args):
     if args.save_path is not None and rank == 0:
         save_path = osp.expanduser(args.save_path)
         model.save(save_path)  #save model
-        #Now saving weights in seperate file
+        #Now saving weights in seperate file (This part of the code has bugs, don't use)
         init = tf.global_variables_initializer()
         param_list = []
         with tf.Session() as sess:
@@ -241,8 +244,7 @@ def main(args):
 
     if args.play:
         logger.log("Running trained model")
-        pybullet.connect(pybullet.DIRECT)
-        env.render(mode="human")
+
         obs = env.reset()
 
         state = model.initial_state if hasattr(model, 'initial_state') else None
@@ -255,19 +257,26 @@ def main(args):
         #analyze_weights.weight_diff(param_list)
         print('----------------------------------------')
 
-        episode_rew = 0
+        episode_rew = np.zeros(env.num_envs) if isinstance(env, VecEnv) else np.zeros(1)
 
         while True:
-            time.sleep(1. / 60.)
+            a = datetime.datetime.now()
             if state is not None:
                 actions, _, state, _ = model.step(obs,S=state, M=dones)
             else:
                 actions, _, _, _ = model.step(obs)
+            b = datetime.datetime.now()
+            c=b-a
+            print("Model time: "+str(c.microseconds))
 
+            a = datetime.datetime.now()
             obs, rew, done, _ = env.step(actions)
-            episode_rew += rew[0] if isinstance(env, VecEnv) else rew
-            
-            env.envs[0].render("human")
+            episode_rew += rew
+            b = datetime.datetime.now()
+            c=b-a
+            print("Env step time :" +str(c.microseconds))
+
+            env.render()
 
             done = done.any() if isinstance(done, np.ndarray) else done
             if done:

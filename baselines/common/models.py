@@ -132,16 +132,15 @@ def mlp_sym_noact(num_layers=2, num_hidden=64, activation=tf.nn.relu, layer_norm
 
 #New network defined##################
 @register("mlp_sym")
-def mlp_sym(num_layers=3, num_hidden=64, activation=tf.nn.relu, layer_norm=False):
+def mlp_sym(num_layers=2, num_hidden=64, activation=tf.nn.relu, layer_norm=False):
     """
     Changed mlp, symmetric input output only, no weight sharing
     """
     def network_fn(X):
         h = tf.layers.flatten(X)
+        h = quad_mirror_layer(h)  #Add mirror layer
         for i in range(num_layers):
-            if(i==0):
-                h = quad_mirror_layer(h)  #Add mirror layer
-            elif(i==1 and num_hidden==64):
+            if(i==0 and num_hidden==64):
                 h = fc(h, 'mlp_fc{}'.format(i), nh=num_hidden*2, init_scale=np.sqrt(2))   #Make the first hidden layer 128
             else:
                 h = fc(h, 'mlp_fc{}'.format(i), nh=num_hidden, init_scale=np.sqrt(2))
@@ -156,16 +155,15 @@ def mlp_sym(num_layers=3, num_hidden=64, activation=tf.nn.relu, layer_norm=False
 
 #New network defined##################
 @register("mlp_sym_ws")
-def mlp_sym_ws(num_layers=3, num_hidden=64, activation=tf.nn.relu, layer_norm=False):
+def mlp_sym_ws(num_layers=2, num_hidden=64, activation=tf.nn.relu, layer_norm=False):
     """
     Changed mlp, symmetric input output and weight sharing
     """
     def network_fn(X):
         h = tf.layers.flatten(X)
+        h = quad_mirror_layer(h)  #Add mirror layer
         for i in range(num_layers):
-            if(i==0):
-                h = quad_mirror_layer(h)  #Add mirror layer
-            elif(i==1 and num_hidden==64):
+            if(i==0 and num_hidden==64):
                 h = fc_wshare(h, 'mlp_fc{}'.format(i), nh=num_hidden*2, init_scale=np.sqrt(2))   #Make the first hidden layer 128
             else:
                 h = fc_wshare(h, 'mlp_fc{}'.format(i), nh=num_hidden, init_scale=np.sqrt(2))
