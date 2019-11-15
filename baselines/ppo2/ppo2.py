@@ -13,19 +13,18 @@ except ImportError:
     MPI = None
 from baselines.ppo2.runner import Runner
 
-#Use for analysis of weights after each batch
-# def save_weights(network,model,epoch):
-#     param_list = []
-#
-#     x = model.var
-#     for i in range(len(x)):
-#         v= x[i].eval()
-#         param_list.append(v)
-#
-#     if(network=="mlp"):
-#         np.save('./Weights_Vanilla/Ant_ppo2_weights_'+str(epoch), np.asarray(param_list)) #save weights as numpy array
-#     elif(network=="mlp_sym_noact"):
-#         np.save('./Weights/Ant_ppo2_weights_'+str(epoch), np.asarray(param_list)) #save weights as numpy array
+#Use for analysis of weights during training
+def save_weights(network,model,total_timesteps):
+    param_list = []
+    x = model.var
+    for i in range(len(x)):
+        v= x[i].eval()
+        param_list.append(v)
+
+    t1=str(len(str(total_timesteps))-1) #Get num of zeros
+    t2=str(total_timesteps)[0]          #Get first digit
+    np.save('./models_bullet_weights/Ant_ppo2_'+str(network)+'_weights_'+t2+'e'+t1, np.asarray(param_list)) #save weights as numpy array
+
 
 def constfn(val):
     def f(_):
@@ -206,7 +205,6 @@ def learn(*, network, env, total_timesteps, eval_env = None, seed=None, nsteps=2
         if update % log_interval == 0 or update == 1:
             # Calculates if value function is a good predicator of the returns (ev > 1)
             # or if it's just worse than predicting nothing (ev =< 0)
-            #save_weights(network,model,update)
             ev = explained_variance(values, returns)
             logger.logkv("misc/serial_timesteps", update*nsteps)
             logger.logkv("misc/nupdates", update)
@@ -229,6 +227,10 @@ def learn(*, network, env, total_timesteps, eval_env = None, seed=None, nsteps=2
             savepath = osp.join(checkdir, '%.5i'%update)
             print('Saving to', savepath)
             model.save(savepath)
+
+        if(update==nupdates):
+            print("Saving final weights at batch")
+            save_weights(network,model,total_timesteps)
 
     return model
 # Avoid division error when calculate the mean (in our case if epinfo is empty returns np.nan, not return an error)

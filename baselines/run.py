@@ -31,10 +31,11 @@ try:
 except ImportError:
     pybullet_envs = None
 
-try:
-    import roboschool
-except ImportError:
-    roboschool = None
+#Roboschool is deprecated now
+# try:
+#     import roboschool
+# except ImportError:
+#     roboschool = None
 
 _game_envs = defaultdict(set)
 for env in gym.envs.registry.all():
@@ -69,9 +70,14 @@ def train(args, extra_args):
     alg_kwargs.update(extra_args)
 
     env = build_env(args)
-    env.render(mode='human')  #Added this line here for making render window appear
+    if args.play:
+        env.render()  #Added this line here for making render window appear
+        env.close()
+
+    print("Num envs: "+str(env.num_envs))
+
     if args.save_video_interval != 0:
-        env = VecVideoRecorder(env, osp.join(logger.get_dir(), "videos"), record_video_trigger=lambda x: x % args.save_video_interval == 0, video_length=args.save_video_length)
+        env = VecVideoRecorder(env,osp.join(logger.get_dir(),"videos"), record_video_trigger=lambda x: x % args.save_video_interval == 0, video_length=args.save_video_length)
 
     if args.network:
         alg_kwargs['network'] = args.network
@@ -228,53 +234,40 @@ def main(args):
     if args.save_path is not None and rank == 0:
         save_path = osp.expanduser(args.save_path)
         model.save(save_path)  #save model
-        #Now saving weights in seperate file (This part of the code has bugs, don't use)
-        init = tf.global_variables_initializer()
-        param_list = []
-        with tf.Session() as sess:
-            sess.run(init)
-            layers = sess.run(model.var)
-            i=0
-            for l in layers:
-                if('pi' in model.var[i].name):
-                    param_list.append(l)
-                i+=1
-
-        np.save(save_path+'_weights', np.asarray(param_list)) #save weights as numpy array
 
     if args.play:
         logger.log("Running trained model")
-
+        env.render(mode='human')
         obs = env.reset()
 
         state = model.initial_state if hasattr(model, 'initial_state') else None
         dones = np.zeros((1,))
 
-        print('----------------------------------------')
-        for v in model.var:
-            print(v)
-        param_list = np.load(str(extra_args['load_path'])+'_weights.npy',allow_pickle=True)
-        #analyze_weights.weight_diff(param_list)
-        print('----------------------------------------')
+        # print('----------------------------------------')
+        # for v in model.var:
+        #     print(v)
+        # param_list = np.load(str(extra_args['load_path'])+'_weights.npy',allow_pickle=True)
+        # #analyze_weights.weight_diff(param_list)
+        # print('----------------------------------------')
 
         episode_rew = np.zeros(env.num_envs) if isinstance(env, VecEnv) else np.zeros(1)
 
         while True:
-            a = datetime.datetime.now()
+            # a = datetime.datetime.now()
             if state is not None:
                 actions, _, state, _ = model.step(obs,S=state, M=dones)
             else:
                 actions, _, _, _ = model.step(obs)
-            b = datetime.datetime.now()
-            c=b-a
-            print("Model time: "+str(c.microseconds))
+            # b = datetime.datetime.now()
+            # c=b-a
+            # print("****Model time: "+str(c.microseconds))
 
-            a = datetime.datetime.now()
+            #a = datetime.datetime.now()
             obs, rew, done, _ = env.step(actions)
             episode_rew += rew
-            b = datetime.datetime.now()
-            c=b-a
-            print("Env step time :" +str(c.microseconds))
+            # b = datetime.datetime.now()
+            # c=b-a
+            # print("Env step time :" +str(c.microseconds))
 
             env.render()
 
