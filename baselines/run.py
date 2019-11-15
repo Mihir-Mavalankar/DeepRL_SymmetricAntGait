@@ -69,8 +69,6 @@ def train(args, extra_args):
     alg_kwargs = get_learn_function_defaults(args.alg, env_type)
     alg_kwargs.update(extra_args)
 
-    print(args)
-    print(blah)
     env = build_env(args)
     if args.play:
         env.render()  #Added this line here for making render window appear
@@ -88,8 +86,6 @@ def train(args, extra_args):
             alg_kwargs['network'] = get_default_network(env_type)
 
     print('Training {} on {}:{} with arguments \n{}'.format(args.alg, env_type, env_id, alg_kwargs))
-    print(alg_kwargs)
-    print(blah)
 
     model = learn(
         env=env,

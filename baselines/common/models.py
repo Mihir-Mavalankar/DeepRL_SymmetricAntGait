@@ -138,7 +138,9 @@ def mlp_sym(num_layers=2, num_hidden=64, activation=tf.nn.relu, layer_norm=False
     """
     def network_fn(X):
         h = tf.layers.flatten(X)
+        print(h.shape)
         h = quad_mirror_layer(h)  #Add mirror layer
+        print(h.shape)
         for i in range(num_layers):
             if(i==0 and num_hidden==64):
                 h = fc(h, 'mlp_fc{}'.format(i), nh=num_hidden*2, init_scale=np.sqrt(2))   #Make the first hidden layer 128

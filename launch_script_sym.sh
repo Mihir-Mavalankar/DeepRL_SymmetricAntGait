@@ -1,4 +1,4 @@
-num_tm=6e7
+num_tm=1e5
 algo=ppo2
 svpath=./models_bullet/antbullet_sym_$algo\_$num_tm
 
