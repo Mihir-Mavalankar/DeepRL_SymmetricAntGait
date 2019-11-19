@@ -54,6 +54,9 @@ class PolicyWithValue(object):
             self.pd, self.pi = self.pdtype.pdfromlatent_sym_wshare(latent, init_scale=0.01)
         elif(network_type == "mlp_sym"):
             self.pd, self.pi = self.pdtype.pdfromlatent_sym(latent, init_scale=0.01)
+        elif(network_type == "mvdp_net"):
+            self.pd, self.pi = self.pdtype.pdfromlatent_mvdp(latent, init_scale=0.01)
+            pass
         else:
             self.pd, self.pi = self.pdtype.pdfromlatent(latent, init_scale=0.01)
 

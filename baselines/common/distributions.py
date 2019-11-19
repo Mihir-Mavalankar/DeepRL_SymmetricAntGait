@@ -1,7 +1,7 @@
 import tensorflow as tf
 import numpy as np
 import baselines.common.tf_util as U
-from baselines.a2c.utils import fc, fc_wshare, quad_mirror_action_layer
+from baselines.a2c.utils import fc, fc_wshare,fc_double, quad_mirror_action_layer
 from tensorflow.python.ops import math_ops
 
 class Pd(object):
@@ -112,6 +112,16 @@ class DiagGaussianPdType(PdType):
         logstd = tf.get_variable(name='pi/logstd', shape=[1, self.size], initializer=tf.zeros_initializer())
         pdparam = tf.concat([mean, mean * 0.0 + logstd], axis=1)
         return self.pdfromflat(pdparam), mean
+    ##########################################################
+
+    #New function for MVDP NET#
+    def pdfromlatent_mvdp(self, latent_vector, init_scale=1.0, init_bias=0.0):
+        mean = _matching_fc_mvdp(latent_vector, 'pi', self.size, init_scale=init_scale, init_bias=init_bias)
+        mean = quad_mirror_action_layer(mean)
+        logstd = tf.get_variable(name='pi/logstd', shape=[1, self.size], initializer=tf.zeros_initializer())
+        pdparam = tf.concat([mean, mean * 0.0 + logstd], axis=1)
+        return self.pdfromflat(pdparam), mean
+
     ##########################################################
 
     #New function for symmetric input output and weight sharing in last policy net layer#
@@ -371,6 +381,29 @@ def _matching_fc(tensor, name, size, init_scale, init_bias):
         return tensor
     else:
         return fc(tensor, name, size, init_scale=init_scale, init_bias=init_bias)
+
+#New function added here######################
+def _matching_fc_mvdp(tensor, name, size, init_scale, init_bias):
+    if tensor.shape[-1] == size:
+        return tensor
+    else:
+        batch = tensor.get_shape()[0].value
+        nin = tensor.get_shape()[1].value
+
+        #Split the combined tensor for a final fully connected double forward pass layer
+        t1 = tf.slice(tensor,[0,0],[batch,nin//2])
+        t2 = tf.slice(tensor,[0,nin//2],[batch,nin//2])
+
+
+        r1,r2 = fc_double(t1,t2, name, size, init_scale=init_scale, init_bias=init_bias)
+
+        assert r1.shape == r2.shape
+        #Recombine the results in a manner defined in the MVDP paper
+        o1 = tf.slice(r1,[0,0],[batch,r1.shape[1]//2])
+        o2 = tf.slice(r2,[0,0],[batch,r1.shape[1]//2])
+
+        return tf.concat([o1,o2],1)
+##############################################
 
 #New function added here######################
 def _matching_fc_wshare(tensor, name, size, init_scale, init_bias):

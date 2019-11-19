@@ -229,7 +229,7 @@ def learn(*, network, env, total_timesteps, eval_env = None, seed=None, nsteps=2
             model.save(savepath)
 
         if(update==nupdates):
-            print("Saving final weights at batch")
+            print("Saving final weights at last batch")
             save_weights(network,model,total_timesteps)
 
     return model

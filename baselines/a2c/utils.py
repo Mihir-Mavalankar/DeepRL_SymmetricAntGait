@@ -62,7 +62,16 @@ def fc(x, scope, nh, *, init_scale=1.0, init_bias=0.0):
         b = tf.get_variable("b", [nh], initializer=tf.constant_initializer(init_bias))
         return tf.matmul(x, w)+b
 
-#New functions added###############################
+#New layer functions added###############################
+#New fc for mdvp net
+def fc_double(x1,x2, scope, nh, *, init_scale=1.0, init_bias=0.0):
+
+    with tf.variable_scope(scope):
+        nin = x1.get_shape()[1].value
+        w = tf.get_variable("w", [nin, nh], initializer=ortho_init(init_scale))
+        b = tf.get_variable("b", [nh], initializer=tf.constant_initializer(init_bias))
+        return tf.matmul(x1, w)+b, tf.matmul(x2, w)+b
+
 #New fully connected layer with weigth sharing#####
 def fc_wshare(x, scope, nh, *, init_scale=1.0, init_bias=0.0):
     with tf.variable_scope(scope):
@@ -118,6 +127,25 @@ def quad_mirror_action_layer(x):
     rev_rf = tf.slice(x,[0,6],[batch,2])
 
     return tf.concat([lf,tf.reverse(rev_rf,[1]),lb,tf.reverse(rev_rb,[1])],1)
+
+
+def lr_flip(x):
+    batch = x.get_shape()[0].value
+    nin = x.get_shape()[1].value
+
+    more = tf.slice(x,[0,0],[batch,8])
+
+    j1 = tf.slice(x,[0,8],[batch,4])    #lf
+    j2 = tf.slice(x,[0,12],[batch,4])   #rf
+    j3 = tf.slice(x,[0,16],[batch,4])   #lb
+    j4 = tf.slice(x,[0,20],[batch,4])   #rb
+
+    f1 = tf.slice(x,[0,24],[batch,1])
+    f2 = tf.slice(x,[0,25],[batch,1])
+    f3 = tf.slice(x,[0,26],[batch,1])
+    f4 = tf.slice(x,[0,27],[batch,1])
+
+    return tf.concat([more, j2, j1, j4, j3, f2, f1, f4, f3],1)
 
 ###################################################
 

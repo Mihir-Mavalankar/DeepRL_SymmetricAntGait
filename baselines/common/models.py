@@ -1,7 +1,7 @@
 import numpy as np
 import tensorflow as tf
 from baselines.a2c import utils
-from baselines.a2c.utils import conv, fc,fc_wshare,quad_mirror_layer, conv_to_fc, batch_to_seq, seq_to_batch
+from baselines.a2c.utils import conv, fc,fc_wshare,fc_double,quad_mirror_layer, conv_to_fc, batch_to_seq, seq_to_batch, lr_flip
 from baselines.common.mpi_running_mean_std import RunningMeanStd
 
 mapping = {}
@@ -174,6 +174,34 @@ def mlp_sym_ws(num_layers=2, num_hidden=64, activation=tf.nn.relu, layer_norm=Fa
             h = activation(h)
 
         return h
+
+    return network_fn
+#######################################
+
+
+#New network defined##################
+@register("mvdp_net")
+def mvdp_net(num_layers=2, num_hidden=64, activation=tf.nn.relu, layer_norm=False):
+
+    def network_fn(X):
+        h_rl = tf.layers.flatten(X)
+        h_lr = lr_flip(h_rl)
+        obs = tf.concat([h_rl,h_lr],1)
+        mobs = tf.concat([h_lr,h_rl],1)
+        assert obs.shape == mobs.shape
+
+        for i in range(num_layers):
+            if(i==0 and num_hidden==64):
+                obs,mobs = fc_double(obs,mobs, 'mlp_fc{}'.format(i), nh=num_hidden*2, init_scale=np.sqrt(2))   #Make the first hidden layer 128
+            else:
+                obs,mobs = fc_double(obs,mobs, 'mlp_fc{}'.format(i), nh=num_hidden, init_scale=np.sqrt(2))
+            if layer_norm:
+                obs = tf.contrib.layers.layer_norm(obs, center=True, scale=True)
+                mobs = tf.contrib.layers.layer_norm(mobs, center=True, scale=True)
+            obs = activation(obs)
+            mobs = activation(mobs)
+
+        return tf.concat([obs,mobs],1)
 
     return network_fn
 #######################################
