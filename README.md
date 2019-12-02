@@ -24,11 +24,7 @@ brew install cmake openmpi
 The master branch supports Tensorflow from version 1.4 to 1.14
 
 ## Installation
-- Clone the repo and cd into it:
-    ```bash
-    git clone https://github.com/openai/baselines.git
-    cd baselines
-    ```
+- Clone the repo and create a conda environment.
 - If you don't have TensorFlow installed already, install your favourite flavor of TensorFlow. In most cases, 
     ```bash 
     pip install tensorflow-gpu # if you have a CUDA-compatible gpu and proper drivers
@@ -39,6 +35,8 @@ The master branch supports Tensorflow from version 1.4 to 1.14
     ```
     should be sufficient. Refer to [TensorFlow installation guide](https://www.tensorflow.org/install/)
     for more details. 
+    
+- Also install gym and pytbullet using pip
 
 - Install baselines package
     ```bash
@@ -52,18 +50,5 @@ The scripts themselves ahve the command shown below and has different variables 
 ```bash
 python -m baselines.run --alg=<name of the algorithm> --env=<environment_id> [additional arguments]
 ```
-
-## Saving, loading and visualizing models
-
-### Saving and loading the model
-The algorithms serialization API is not properly unified yet; however, there is a simple method to save / restore trained models. 
-`--save_path` and `--load_path` command-line option loads the tensorflow state from a given path before training, and saves it after the training, respectively. 
-Let's imagine you'd like to train ppo2 on Atari Pong,  save the model and then later visualize what has it learnt.
-```bash
-python -m baselines.run --alg=ppo2 --env=PongNoFrameskip-v4 --num_timesteps=2e7 --save_path=~/models/pong_20M_ppo2
-```
-This should get to the mean reward per episode about 20. To load and visualize the model, we'll do the following - load the model, train it for 0 steps, and then visualize: 
-```bash
-python -m baselines.run --alg=ppo2 --env=PongNoFrameskip-v4 --num_timesteps=0 --load_path=~/models/pong_20M_ppo2 --play
-```
+There are already agruments in place for saving and loadingg the models which can be cjhanged according to your needs.
 
