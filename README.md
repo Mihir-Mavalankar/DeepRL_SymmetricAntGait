@@ -46,6 +46,9 @@ The master branch supports Tensorflow from version 1.4 to 1.14
 ## Training models
 There are four different launch scripts for each model and you can just run the script from the terminal to train the models.
 Use the render_ant.py to see the video for the trainied models on the Ant simulation. 
+```bash
+./launchscript_<model>.sh
+```
 The scripts themselves have the command shown below and has different variables defined that you can tweak the training according to your requirements:
 ```bash
 python -m baselines.run --alg=<name of the algorithm> --env=<environment_id> [additional arguments]
