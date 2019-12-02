@@ -4,6 +4,8 @@
 
 First, refer to the OpenAI Baselines project first as this project uses is built off it. OpenAI Baselines is a set of high-quality implementations of reinforcement learning algorithms. Refer to [OpenAI baselines](https://github.com/openai/baselines)
 
+The intuition of this project is that gaits of animals with bilateral symmetry are symmetric in nature, and we want to explore if exploiting this fact in reinforcement learning and help simulations learn more symmetric motion or that the training time for reinforcement learning models can be reduced. We are trying to implement it by making the state and action vector symmetric and using weight sharing in all the policy network layers. We have also included one of the implementations given in this paper [On Learning Symmetric Locomotion](https://www.cs.ubc.ca/~van/papers/2019-MIG-symmetry/) for comparison.
+
 ## Prerequisites 
 Baselines requires python3 (>=3.5) with the development headers. You'll also need system packages CMake, OpenMPI and zlib. Those can be installed as follows
 ### Ubuntu 
@@ -42,9 +44,9 @@ The master branch supports Tensorflow from version 1.4 to 1.14
     ```
 
 ## Training models
-There are four differnt launch scripts for each model and you can just run the script from the terminal to train the models.
+There are four different launch scripts for each model and you can just run the script from the terminal to train the models.
 Use the render_ant.py to see the video for the trainied models on the Ant simulation. 
-The scripts themselves ahve the command shown below and has different variables defined that you can tweak according to your requirements:
+The scripts themselves have the command shown below and has different variables defined that you can tweak the training according to your requirements:
 ```bash
 python -m baselines.run --alg=<name of the algorithm> --env=<environment_id> [additional arguments]
 ```
