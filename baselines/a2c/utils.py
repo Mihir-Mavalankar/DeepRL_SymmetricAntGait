@@ -80,6 +80,7 @@ def fc_wshare(x, scope, nh, *, init_scale=1.0, init_bias=0.0):
         b = tf.get_variable("b", [nh], initializer=tf.constant_initializer(init_bias))
 
         w_prime = tf.concat([w,tf.reverse(w,[1])],1)
+        assert w_prime.shape[1]//2 == w.shape[1]
 
         return tf.matmul(x, w_prime)+b
 
