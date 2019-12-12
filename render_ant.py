@@ -15,6 +15,7 @@ from baselines.common.cmd_util import common_arg_parser, parse_unknown_args, mak
 from baselines.common.tf_util import get_session
 
 
+
 def get_learn_function_defaults(alg, env_type):
     try:
         alg_defaults = import_module('baselines.ppo2.defaults')
@@ -56,10 +57,10 @@ def build_env(alg,seed,nenv):
 
 def main():
 
-  network='mlp'
+  network='mlp_sym'
   pybullet.connect(pybullet.DIRECT)
-
   env = build_env('ppo2',None,1)
+
   print("Running pre-trained model")
   env.render(mode='human')
   obs = env.reset()
@@ -71,7 +72,7 @@ def main():
       env=env,
       seed=None,
       total_timesteps=0,
-      load_path='./models_bullet/antbullet_vanilla_ppo2_6e7',
+      load_path='./models_bullet/antbullet_sym_ppo2_6e7',  #antbullet_vanilla_ppo2_6e7, antbullet_sym_ppo2_6e7 , antbullet_sym_ws_ppo2_6e7 , antbullet_mdvp_net_ppo2_6e7
       **alg_kwargs
   )
 
