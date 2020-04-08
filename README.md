@@ -1,5 +1,3 @@
-**Status:** Inactive
-
 # About the project
 
 First, refer to the OpenAI Baselines project first as this project uses is built off it. OpenAI Baselines is a set of high-quality implementations of reinforcement learning algorithms. Refer to [OpenAI baselines](https://github.com/openai/baselines)
