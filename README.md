@@ -1,4 +1,4 @@
-**Status:** Active (under active development, breaking changes may occur)
+**Status:** Inactive
 
 # About the project
 
